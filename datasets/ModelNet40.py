@@ -235,11 +235,7 @@ class ModelNet40Dataset(PointCloudDataset):
         t0 = time.time()
 
         # Load wanted points if possible
-        if self.train:
-            split ='training'
-        else:
-            split = 'test'
-
+        split = 'training' if self.train else 'test'
         print('\nLoading {:s} points subsampled at {:.3f}'.format(split, self.config.first_subsampling_dl))
         filename = join(self.path, '{:s}_{:.3f}_record.pkl'.format(split, self.config.first_subsampling_dl))
 
@@ -359,8 +355,7 @@ class ModelNet40Sampler(Sampler):
 
                 gen_indices = []
                 pick_n = self.dataset.epoch_n // self.dataset.num_classes + 1
-                for i, l in enumerate(self.dataset.label_values):
-
+                for l in self.dataset.label_values:
                     # Get the potentials of the objects of this class
                     label_inds = np.where(np.equal(self.dataset.input_labels, l))[0]
                     class_potentials = self.potentials[label_inds]
@@ -389,17 +384,16 @@ class ModelNet40Sampler(Sampler):
             self.potentials[gen_indices] = np.ceil(self.potentials[gen_indices])
             self.potentials[gen_indices] += np.random.rand(gen_indices.shape[0]) * 0.1 + 0.1
 
+        elif self.balance_labels:
+            pick_n = self.dataset.epoch_n // self.dataset.num_classes + 1
+            gen_indices = []
+            for l in self.dataset.label_values:
+                label_inds = np.where(np.equal(self.dataset.input_labels, l))[0]
+                rand_inds = np.random.choice(label_inds, size=pick_n, replace=True)
+                gen_indices += [rand_inds]
+            gen_indices = np.random.permutation(np.hstack(gen_indices))
         else:
-            if self.balance_labels:
-                pick_n = self.dataset.epoch_n // self.dataset.num_classes + 1
-                gen_indices = []
-                for l in self.dataset.label_values:
-                    label_inds = np.where(np.equal(self.dataset.input_labels, l))[0]
-                    rand_inds = np.random.choice(label_inds, size=pick_n, replace=True)
-                    gen_indices += [rand_inds]
-                gen_indices = np.random.permutation(np.hstack(gen_indices))
-            else:
-                gen_indices = np.random.permutation(self.dataset.num_models)[:self.dataset.epoch_n]
+            gen_indices = np.random.permutation(self.dataset.num_models)[:self.dataset.epoch_n]
 
         ################
         # Generator loop
@@ -571,9 +565,8 @@ class ModelNet40Sampler(Sampler):
             # Perform calibration
             #####################
 
-            for epoch in range(10):
-                for batch_i, batch in enumerate(dataloader):
-
+            for _ in range(10):
+                for batch in dataloader:
                     # Update neighborhood histogram
                     counts = [np.sum(neighb_mat.numpy() < neighb_mat.shape[0], axis=1) for neighb_mat in batch.neighbors]
                     hists = [np.bincount(c, minlength=hist_n)[:hist_n] for c in counts]
@@ -640,10 +633,7 @@ class ModelNet40Sampler(Sampler):
                 for neighb_size in range(hist_n):
                     line0 = '     {:4d}     '.format(neighb_size)
                     for layer in range(neighb_hists.shape[0]):
-                        if neighb_size > percentiles[layer]:
-                            color = bcolors.FAIL
-                        else:
-                            color = bcolors.OKGREEN
+                        color = bcolors.FAIL if neighb_size > percentiles[layer] else bcolors.OKGREEN
                         line0 += '|{:}{:10d}{:}  '.format(color,
                                                          neighb_hists[layer, neighb_size],
                                                          bcolors.ENDC)

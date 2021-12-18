@@ -137,16 +137,15 @@ def load_training_results(path):
     t = []
     for line in lines[1:]:
         line_info = line.split()
-        if (len(line) > 0):
-            epochs += [int(line_info[0])]
-            steps += [int(line_info[1])]
-            L_out += [float(line_info[2])]
-            L_p += [float(line_info[3])]
-            acc += [float(line_info[4])]
-            t += [float(line_info[5])]
-        else:
+        if len(line) <= 0:
             break
 
+        epochs += [int(line_info[0])]
+        steps += [int(line_info[1])]
+        L_out += [float(line_info[2])]
+        L_p += [float(line_info[3])]
+        acc += [float(line_info[4])]
+        t += [float(line_info[5])]
     return epochs, steps, L_out, L_p, acc, t
 
 
@@ -155,11 +154,10 @@ def load_single_IoU(filename, n_parts):
     with open(filename, 'r') as f:
         lines = f.readlines()
 
-    # Load all IoUs
-    all_IoUs = []
-    for i, line in enumerate(lines):
-        all_IoUs += [np.reshape([float(IoU) for IoU in line.split()], [-1, n_parts])]
-    return all_IoUs
+    return [
+        np.reshape([float(IoU) for IoU in line.split()], [-1, n_parts])
+        for line in lines
+    ]
 
 
 def load_snap_clouds(path, dataset, only_last=False):
@@ -237,12 +235,13 @@ def compare_trainings(list_of_paths, list_of_labels=None):
 
         print(path)
 
-        if ('val_IoUs.txt' in [f for f in listdir_str(path)]) or ('val_confs.txt' in [f for f in listdir_str(path)]):
-            config = Config()
-            config.load(path)
-        else:
+        if 'val_IoUs.txt' not in list(
+            listdir_str(path)
+        ) and 'val_confs.txt' not in list(listdir_str(path)):
             continue
 
+        config = Config()
+        config.load(path)
         # Load results
         epochs, steps, L_out, L_p, acc, t = load_training_results(path)
         epochs = np.array(epochs, dtype=np.int32)
@@ -386,7 +385,7 @@ def compare_convergences_segment(dataset, list_of_paths, list_of_names=None):
         class_IoUs, mIoUs = IoU_class_metrics(val_IoUs, smooth_n)
 
         # Aggregate results
-        all_pred_epochs += [np.array([i for i in range(len(val_IoUs))])]
+        all_pred_epochs += [np.array(list(range(len(val_IoUs))))]
         all_mIoUs += [mIoUs]
         all_class_IoUs += [class_IoUs]
 
@@ -623,7 +622,7 @@ def compare_convergences_SLAM(dataset, list_of_paths, list_of_names=None):
         subpart_class_IoUs, subpart_mIoUs = IoU_class_metrics(subpart_IoUs, smooth_n)
 
         # Aggregate results
-        all_pred_epochs += [np.array([i for i in range(len(val_IoUs))])]
+        all_pred_epochs += [np.array(list(range(len(val_IoUs))))]
         all_val_mIoUs += [val_mIoUs]
         all_val_class_IoUs += [val_class_IoUs]
         all_subpart_mIoUs += [subpart_mIoUs]

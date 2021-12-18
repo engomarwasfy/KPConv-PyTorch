@@ -78,10 +78,9 @@ class KPCNN(nn.Module):
 
         # Loop over consecutive blocks
         block_in_layer = 0
-        for block_i, block in enumerate(config.architecture):
-
+        for block in config.architecture:
             # Check equivariance
-            if ('equivariant' in block) and (not out_dim % 3 == 0):
+            if 'equivariant' in block and out_dim % 3 != 0:
                 raise ValueError('Equivariant block but features dimension is not a factor of 3')
 
             # Detect upsampling block to stop
@@ -101,12 +100,7 @@ class KPCNN(nn.Module):
             block_in_layer += 1
 
             # Update dimension of input from output
-            if 'simple' in block:
-                in_dim = out_dim // 2
-            else:
-                in_dim = out_dim
-
-
+            in_dim = out_dim // 2 if 'simple' in block else out_dim
             # Detect change to a subsampled layer
             if 'pool' in block or 'strided' in block:
                 # Update radius and feature dimension for next layer
@@ -219,7 +213,7 @@ class KPFCNN(nn.Module):
         for block_i, block in enumerate(config.architecture):
 
             # Check equivariance
-            if ('equivariant' in block) and (not out_dim % 3 == 0):
+            if 'equivariant' in block and out_dim % 3 != 0:
                 raise ValueError('Equivariant block but features dimension is not a factor of 3')
 
             # Detect change to next layer for skip connection
@@ -240,11 +234,7 @@ class KPFCNN(nn.Module):
                                                     config))
 
             # Update dimension of input from output
-            if 'simple' in block:
-                in_dim = out_dim // 2
-            else:
-                in_dim = out_dim
-
+            in_dim = out_dim // 2 if 'simple' in block else out_dim
             # Detect change to a subsampled layer
             if 'pool' in block or 'strided' in block:
                 # Update radius and feature dimension for next layer

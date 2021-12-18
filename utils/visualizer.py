@@ -208,23 +208,25 @@ class ModelVisualizer:
                     """
                     global plots, aim_point
 
-                    if 'in_points' in plots:
-                        if plots['in_points'].actor.actor._vtk_obj in [o._vtk_obj for o in picker.actors]:
-                            point_rez = plots['in_points'].glyph.glyph_source.glyph_source.output.points.to_array().shape[0]
-                            new_point_i = int(np.floor(picker.point_id / point_rez))
-                            if new_point_i < len(plots['in_points'].mlab_source.points):
-                                # Get closest point in the layer we are interested in
-                                aim_point = plots['in_points'].mlab_source.points[new_point_i:new_point_i + 1]
-                                update_scene()
+                    if 'in_points' in plots and plots['in_points'].actor.actor._vtk_obj in [
+                        o._vtk_obj for o in picker.actors
+                    ]:
+                        point_rez = plots['in_points'].glyph.glyph_source.glyph_source.output.points.to_array().shape[0]
+                        new_point_i = int(np.floor(picker.point_id / point_rez))
+                        if new_point_i < len(plots['in_points'].mlab_source.points):
+                            # Get closest point in the layer we are interested in
+                            aim_point = plots['in_points'].mlab_source.points[new_point_i:new_point_i + 1]
+                            update_scene()
 
-                    if 'points' in plots:
-                        if plots['points'].actor.actor._vtk_obj in [o._vtk_obj for o in picker.actors]:
-                            point_rez = plots['points'].glyph.glyph_source.glyph_source.output.points.to_array().shape[0]
-                            new_point_i = int(np.floor(picker.point_id / point_rez))
-                            if new_point_i < len(plots['points'].mlab_source.points):
-                                # Get closest point in the layer we are interested in
-                                aim_point = plots['points'].mlab_source.points[new_point_i:new_point_i + 1]
-                                update_scene()
+                    if 'points' in plots and plots['points'].actor.actor._vtk_obj in [
+                        o._vtk_obj for o in picker.actors
+                    ]:
+                        point_rez = plots['points'].glyph.glyph_source.glyph_source.output.points.to_array().shape[0]
+                        new_point_i = int(np.floor(picker.point_id / point_rez))
+                        if new_point_i < len(plots['points'].mlab_source.points):
+                            # Get closest point in the layer we are interested in
+                            aim_point = plots['points'].mlab_source.points[new_point_i:new_point_i + 1]
+                            update_scene()
 
                 def update_scene():
                     global plots, offsets, p_scale, show_in_p, aim_point, point_i
@@ -320,20 +322,19 @@ class ModelVisualizer:
                                                 figure=fig1)
 
 
-                    if True:
-                        plots['center'] = mlab.points3d(p[point_i, 0],
-                                                        p[point_i, 1],
-                                                        p[point_i, 2],
-                                                        scale_factor=1.1*p_scale,
-                                                        scale_mode='none',
-                                                        color=(0, 1, 0),
-                                                        figure=fig1)
+                    plots['center'] = mlab.points3d(p[point_i, 0],
+                                                    p[point_i, 1],
+                                                    p[point_i, 2],
+                                                    scale_factor=1.1*p_scale,
+                                                    scale_mode='none',
+                                                    color=(0, 1, 0),
+                                                    figure=fig1)
 
-                        # New title
-                        plots['title'] = mlab.title(str(obj_i), color=(0, 0, 0), size=0.3, height=0.01)
-                        text = '<--- (press g for previous)' + 50 * ' ' + '(press h for next) --->'
-                        plots['text'] = mlab.text(0.01, 0.01, text, color=(0, 0, 0), width=0.98)
-                        plots['orient'] = mlab.orientation_axes()
+                    # New title
+                    plots['title'] = mlab.title(str(obj_i), color=(0, 0, 0), size=0.3, height=0.01)
+                    text = '<--- (press g for previous)' + 50 * ' ' + '(press h for next) --->'
+                    plots['text'] = mlab.text(0.01, 0.01, text, color=(0, 0, 0), width=0.98)
+                    plots['orient'] = mlab.orientation_axes()
 
                     # Set the saved view
                     mlab.view(*v)

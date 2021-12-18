@@ -571,7 +571,7 @@ class ModelTrainer:
             line = ''
             for IoU in IoUs:
                 line += '{:.3f} '.format(IoU)
-            line = line + '\n'
+            line += '\n'
 
             # Write in file
             if exists(test_file):
