@@ -68,8 +68,8 @@ def model_choice(chosen_log):
                 chosen_log = log
                 break
 
-        if chosen_log in ['last_ModelNet40', 'last_ShapeNetPart', 'last_S3DIS']:
-            raise ValueError('No log of the dataset "' + test_dataset + '" found')
+    if chosen_log in ['last_ModelNet40', 'last_ShapeNetPart', 'last_S3DIS']:
+        raise ValueError('No log of the dataset "' + test_dataset + '" found')
 
     # Check if log exists
     if not os.path.exists(chosen_log):
@@ -156,11 +156,7 @@ if __name__ == '__main__':
     print('Data Preparation')
     print('****************')
 
-    if on_val:
-        set = 'validation'
-    else:
-        set = 'test'
-
+    set = 'validation' if on_val else 'test'
     # Initiate dataset
     if config.dataset == 'ModelNet40':
         test_dataset = ModelNet40Dataset(config, train=False)

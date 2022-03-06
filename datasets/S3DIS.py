@@ -140,13 +140,15 @@ class S3DISDataset(PointCloudDataset):
         # List of training files
         self.files = []
         for i, f in enumerate(self.cloud_names):
-            if self.set == 'training':
-                if self.all_splits[i] != self.validation_split:
-                    self.files += [join(ply_path, f + '.ply')]
-            elif self.set in ['validation', 'test', 'ERF']:
-                if self.all_splits[i] == self.validation_split:
-                    self.files += [join(ply_path, f + '.ply')]
-            else:
+            if (
+                self.set == 'training'
+                and self.all_splits[i] != self.validation_split
+                or self.set != 'training'
+                and self.set in ['validation', 'test', 'ERF']
+                and self.all_splits[i] == self.validation_split
+            ):
+                self.files += [join(ply_path, f + '.ply')]
+            elif self.set not in ['training', 'validation', 'test', 'ERF']:
                 raise ValueError('Unknown set for S3DIS data: ', self.set)
 
         if self.set == 'training':
@@ -184,7 +186,7 @@ class S3DISDataset(PointCloudDataset):
             self.potentials = []
             self.min_potentials = []
             self.argmin_potentials = []
-            for i, tree in enumerate(self.pot_trees):
+            for tree in self.pot_trees:
                 self.potentials += [torch.from_numpy(np.random.rand(tree.data.shape[0]) * 1e-3)]
                 min_ind = int(torch.argmin(self.potentials[-1]))
                 self.argmin_potentials += [min_ind]
@@ -255,11 +257,7 @@ class S3DISDataset(PointCloudDataset):
         batch_n = 0
 
         info = get_worker_info()
-        if info is not None:
-            wid = info.id
-        else:
-            wid = None
-
+        wid = info.id if info is not None else None
         while True:
 
             t += [time.time()]

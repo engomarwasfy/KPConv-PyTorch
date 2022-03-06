@@ -67,8 +67,8 @@ def model_choice(chosen_log):
                 chosen_log = log
                 break
 
-        if chosen_log in ['last_ModelNet40', 'last_ShapeNetPart', 'last_S3DIS']:
-            raise ValueError('No log of the dataset "' + test_dataset + '" found')
+    if chosen_log in ['last_ModelNet40', 'last_ShapeNetPart', 'last_S3DIS']:
+        raise ValueError('No log of the dataset "' + test_dataset + '" found')
 
     # Check if log exists
     if not os.path.exists(chosen_log):
